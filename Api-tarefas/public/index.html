@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <title>Minha Lista de Tarefas</title>
+  <style>
+    body { font-family: Arial, sans-serif; padding: 20px; }
+    ul { list-style: none; padding: 0; }
+    li { margin: 8px 0; }
+    button { margin-left: 10px; }
+  </style>
+</head>
+<body>
+  <h1>📋 Minhas Tarefas</h1>
+
+  <input type="text" id="novaTarefa" placeholder="Digite uma nova tarefa">
+  <button onclick="adicionarTarefa()">Adicionar</button>
+
+  <ul id="listaTarefas"></ul>
+
+  <script>
+    const API_URL = 'http://localhost:3000/tarefas';
+
+    async function carregarTarefas() {
+      const res = await fetch(API_URL);
+      const tarefas = await res.json();
+      const lista = document.getElementById('listaTarefas');
+      lista.innerHTML = '';
+
+      tarefas.forEach(tarefa => {
+        const li = document.createElement('li');
+        li.textContent = tarefa.titulo;
+
+        const btn = document.createElement('button');
+        btn.textContent = 'Remover';
+        btn.onclick = () => removerTarefa(tarefa.id);
+
+        li.appendChild(btn);
+        lista.appendChild(li);
+      });
+    }
+
+    async function adicionarTarefa() {
+      const input = document.getElementById('novaTarefa');
+      const titulo = input.value.trim();
+      if (!titulo) return;
+
+      await fetch(API_URL, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ titulo })
+      });
+
+      input.value = '';
+      carregarTarefas();
+    }
+
+    async function removerTarefa(id) {
+      await fetch(`${API_URL}/${id}`, { method: 'DELETE' });
+      carregarTarefas();
+    }
+
+    carregarTarefas();
+  </script>
+</body>
+</html>
